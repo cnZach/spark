@@ -2041,7 +2041,11 @@ To run a Spark Streaming applications, you need to have the following.
   eliminate the need to set this rate limit, as Spark Streaming automatically figures out the
   rate limits and dynamically adjusts them if the processing conditions change. This backpressure
   can be enabled by setting the [configuration parameter](configuration.html#spark-streaming)
-  `spark.streaming.backpressure.enabled` to `true`.
+  `spark.streaming.backpressure.enabled` to `true`. When there's huge backlog in some kafka partitions,
+  spark may try to consume from the partitions with huge backlog first, as such spark may stop consuming 
+  from other topic with small backlog for a while. To configure a min rate for such small backlog partitions,
+  you can set `spark.streaming.kafka.minRatePerpartitionPerBatch`, so that spark can make sure to read enough
+  number of messages from those small backlog partitions as well.
 
 ### Upgrading Application Code
 {:.no_toc}

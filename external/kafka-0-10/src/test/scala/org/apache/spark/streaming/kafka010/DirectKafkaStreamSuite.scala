@@ -537,12 +537,8 @@ class DirectKafkaStreamSuite
     val topic = "maxMessagesPerPartition"
     val rateController = Some(new ConstantRateController(0, new ConstantEstimator(100), 1000))
     val ppc = Some(new PerPartitionConfig {
-      def maxRatePerPartition(tp: TopicPartition) =
-        if (tp.topic == topic && tp.partition == 0) {
-          50
-        } else {
-          100
-        }
+      def maxRatePerPartition(tp: TopicPartition) = {if (tp.topic == topic && tp.partition == 0) 50 else 100}
+      def minRatePerPartitionPerBatch(tp: TopicPartition) = 1
     })
     val kafkaStream = getDirectKafkaStream(topic, rateController, ppc)
 
@@ -550,7 +546,10 @@ class DirectKafkaStreamSuite
     assert(kafkaStream.maxMessagesPerPartition(input).get ==
       Map(new TopicPartition(topic, 0) -> 5L, new TopicPartition(topic, 1) -> 10L))
   }
+ test("minMessagesPerPartition respects min rate") {
+ // to do
 
+ }
   test("using rate controller") {
     val topic = "backpressure"
     kafkaTestUtils.createTopic(topic, 1)

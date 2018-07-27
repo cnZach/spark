@@ -144,10 +144,11 @@ private[spark] class DirectKafkaInputDStream[K, V](
 
         lagPerPartition.map { case (tp, lag) =>
           val maxRateLimitPerPartition = ppc.maxRatePerPartition(tp)
+          val minRateLimitPerPartition = Math.min(lag, ppc.minRatePerPartitionPerBatch(tp))
           val backpressureRate = lag / totalLag.toDouble * rate
           tp -> (if (maxRateLimitPerPartition > 0) {
-            Math.min(backpressureRate, maxRateLimitPerPartition)} else backpressureRate)
-        }
+            Math.max(Math.min(backpressureRate, maxRateLimitPerPartition), minRateLimitPerPartition)} else backpressureRate)
+          }
       case None => offsets.map { case (tp, offset) => tp -> ppc.maxRatePerPartition(tp).toDouble }
     }
 

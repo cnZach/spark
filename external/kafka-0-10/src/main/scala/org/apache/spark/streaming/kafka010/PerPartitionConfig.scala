@@ -34,6 +34,13 @@ abstract class PerPartitionConfig extends Serializable {
    *  from each Kafka partition.
    */
   def maxRatePerPartition(topicPartition: TopicPartition): Long
+  /**
+   * Minimum rate (number of records per second) at which data will be read
+   *  from each Kafka partition. This value is honored only when there's 
+   *  consumer lag and the lag value is greater than it. When the lag value
+   *  is less than this setting, then spark will just retrieve the lagged messages from kafka. 
+   */
+  def minRatePerPartitionPerBatch(topicPartition: TopicPartition): Long
 }
 
 /**
@@ -42,6 +49,8 @@ abstract class PerPartitionConfig extends Serializable {
 private class DefaultPerPartitionConfig(conf: SparkConf)
     extends PerPartitionConfig {
   val maxRate = conf.getLong("spark.streaming.kafka.maxRatePerPartition", 0)
+  val minRatePerBatch = conf.getLong("spark.streaming.kafka.minRatePerPartitionPerBatch", 0)
 
   def maxRatePerPartition(topicPartition: TopicPartition): Long = maxRate
+  def minRatePerPartitionPerBatch(topicPartition: TopicPartition): Long = minRatePerBatch
 }
